@@ -10,6 +10,9 @@
 
 #include <stdio.h>
 
+#undef UA_MULTITHREADING
+#define UA_MULTITHREADING 0
+
 #if UA_MULTITHREADING >= 100
 #include <pthread.h>
 static pthread_mutex_t printf_mutex = PTHREAD_MUTEX_INITIALIZER;

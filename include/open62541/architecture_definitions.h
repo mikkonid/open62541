@@ -434,7 +434,7 @@ static UA_INLINE void *
 UA_atomic_cmpxchg(void * volatile * addr, void *expected, void *newptr) {
 #if UA_MULTITHREADING >= 100
 #ifdef _MSC_VER /* Visual Studio */
-    return _InterlockedCompareExchangePointer(addr, expected, newptr);
+    return _InterlockedCompareExchangePointer(addr, newptr, expected);
 #else /* GCC/Clang */
     return __sync_val_compare_and_swap(addr, expected, newptr);
 #endif
@@ -451,7 +451,7 @@ static UA_INLINE uint32_t
 UA_atomic_addUInt32(volatile uint32_t *addr, uint32_t increase) {
 #if UA_MULTITHREADING >= 100
 #ifdef _MSC_VER /* Visual Studio */
-    return _InterlockedExchangeAdd(addr, increase) + increase;
+    return _InterlockedExchangeAdd((volatile long*)addr, increase) + increase;
 #else /* GCC/Clang */
     return __sync_add_and_fetch(addr, increase);
 #endif
@@ -467,7 +467,7 @@ static UA_INLINE size_t
 UA_atomic_addSize(volatile size_t *addr, size_t increase) {
 #if UA_MULTITHREADING >= 100
 #ifdef _MSC_VER /* Visual Studio */
-    return _InterlockedExchangeAdd(addr, increase) + increase;
+    return _InterlockedExchangeAdd64((volatile __int64*)addr, increase) + increase;
 #else /* GCC/Clang */
     return __sync_add_and_fetch(addr, increase);
 #endif
@@ -477,6 +477,15 @@ UA_atomic_addSize(volatile size_t *addr, size_t increase) {
     *addr = accu;
     return accu;
 #endif
+}
+
+static unsigned long
+_InterlockedExchangeSub(volatile uint32_t *Addend, uint32_t Value) {
+    return (unsigned long)_InterlockedExchangeAdd((volatile long *)Addend, -(long)Value);
+}
+static size_t
+_InterlockedExchangeSub64(volatile size_t *Addend, size_t Value) {
+    return (size_t)_InterlockedExchangeAdd64((volatile __int64 *)Addend, -(__int64)Value);
 }
 
 static UA_INLINE uint32_t
@@ -499,7 +508,7 @@ static UA_INLINE size_t
 UA_atomic_subSize(volatile size_t *addr, size_t decrease) {
 #if UA_MULTITHREADING >= 100
 #ifdef _MSC_VER /* Visual Studio */
-    return _InterlockedExchangeSub(addr, decrease) - decrease;
+    return _InterlockedExchangeSub64(addr, decrease) - decrease;
 #else /* GCC/Clang */
     return __sync_sub_and_fetch(addr, decrease);
 #endif
