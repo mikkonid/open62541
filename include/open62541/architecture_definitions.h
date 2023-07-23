@@ -479,6 +479,7 @@ UA_atomic_addSize(volatile size_t *addr, size_t increase) {
 #endif
 }
 
+#ifdef _MSC_VER
 static unsigned long
 _InterlockedExchangeSub(volatile uint32_t *Addend, uint32_t Value) {
     return (unsigned long)_InterlockedExchangeAdd((volatile long *)Addend, -(long)Value);
@@ -487,6 +488,7 @@ static size_t
 _InterlockedExchangeSub64(volatile size_t *Addend, size_t Value) {
     return (size_t)_InterlockedExchangeAdd64((volatile __int64 *)Addend, -(__int64)Value);
 }
+#endif
 
 static UA_INLINE uint32_t
 UA_atomic_subUInt32(volatile uint32_t *addr, uint32_t decrease) {
